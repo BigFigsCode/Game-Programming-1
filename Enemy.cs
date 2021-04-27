@@ -2,54 +2,47 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GunScript : MonoBehaviour
+public class Enemy : MonoBehaviour
 {
-    public float damage = 10f;
-    public float range = 100f;
-    public float impactForce = 40;
-    public float fireRate = 15;
+    private Rigidbody enemyRB;
+    private Transform player;
 
-    public Camera fpsCam;
-    public ParticleSystem muzzleFlash;
-    public GameObject impactEffect;
+    public float enemySpeed;
+    public float howClose;
+    private float distance;
 
-   // private float nextTimeToFire = 0f;
+    
     // Start is called before the first frame update
     void Start()
     {
-        
+       // enemyRB = GetComponent<Rigidbody>();
+        player = GameObject.Find("NewPlayer").transform;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetButtonDown("Fire1"))
-        {
-            //nextTimeToFire = Time.time + 1f/fireRate;
-            Shoot();
+        //grab the distance between the player and the enemy
+        distance = Vector3.Distance(player.transform.position, transform.position);
+        //if the distance is less than or equal to the set closeness then the enemy will look at the player
+        //and follow the player until that closeness is out of reach
+        if (distance <= howClose) {
+            transform.LookAt(player);
+            GetComponent<Rigidbody>().AddForce(transform.forward * enemySpeed);
         }
-        else {
-            muzzleFlash.Stop();
-        }
-    }
-
-    void Shoot() {
-        muzzleFlash.Play();
-
-        RaycastHit hit;
-        if (Physics.Raycast(fpsCam.transform.position, fpsCam.transform.forward, out hit, range)) {
-            Debug.Log(hit.transform.name);
-
-            Target target = hit.transform.GetComponent<Target>();
-            if (target != null) {
-                target.TakeDamage(damage);
-            }
-            if (hit.rigidbody != null) {
-                hit.rigidbody.AddForce(hit.normal * impactForce);
-            }
-
-            GameObject impactGO =  Instantiate(impactEffect, hit.point, Quaternion.LookRotation(hit.normal));
-            Destroy(impactGO, 1.5f);
+       
+        //enemy follows the player 
+       // Vector3 enemyFollow = (player.transform.position - transform.position).normalized;
+       
+        
+        //enemy is as fast as the player
+       // enemyRB.AddForce(enemyFollow * enemySpeed);
+        //destroy the enemy if it falls in the water or collides with a projectile
+        if (transform.position.y < -10) {
+            Destroy(gameObject);
         }
     }
+
+    
+
 }
